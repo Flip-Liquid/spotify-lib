@@ -1,0 +1,33 @@
+Link types:
+
+1) Youtube 
+2) Spotify
+3) LastFM
+
+Sources: places that host links
+
+1) Facebook
+2) Reddit
+
+Work
+
+-Common interface for link types and sources
+
+
+
+1) Youtube 
+	-Get video name from supplied url (0)
+
+2) Spotify lib
+	-Get user account info
+	-Check if song is in spotify library 
+	-Create a new playlist
+	-Add songs to playlist
+
+3) Facebook lib
+	-Scrape supplied group id (0)
+	-Return a list of of posts (0)
+		-with reactions included (1)
+
+4) Reddit (2)
+	-Supply subreddit
