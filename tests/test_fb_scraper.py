@@ -28,8 +28,8 @@ class TestScraper(unittest.TestCase):
 	#TODO create a test group to verify this funcitonality
 	def test_basic_scrape(self):
 		fb_criteria = FacebookCriteria()
-		fb_criteria.app_id = "125411544789715"
-		fb_criteria.app_secret = "cccd85883b5843b282da3b2d32bb2118" 
+		fb_criteria.app_id = ""
+		fb_criteria.app_secret = ""
 		#Ambient techno world 1990s
 		fb_criteria.group_id = "155783244468120"
 

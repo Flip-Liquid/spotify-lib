@@ -1,0 +1,22 @@
+#!/bin/sh
+
+exec 1>&2
+
+#regex to search for secrets
+regex="\+.*(s|S)ecret.*=.*(\"|').+(\"|')"
+
+if test $(git diff --cached | egrep $regex | wc -l) != 0
+then
+	exec git diff --cached | egrep $regex
+
+	cat <<\EOF
+
+	git diff --cached | egrep "\+.*(s|S)ecret.*=.*(\"|').+(\"|')"
+
+	Error: Possible secret detected in your code
+
+	Remove this before committing
+
+EOF
+	exit 1
+fi
