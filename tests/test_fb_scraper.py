@@ -6,11 +6,13 @@ from common import criteria
 from common.criteria import facebook_criteria
 from common.criteria.facebook_criteria import FacebookCriteria as FacebookCriteria
 
-from posts import facebook_post
-from posts.facebook_post import FacebookPost as FacebookPost
+from common import posts
+from common.posts import facebook_post
+from common.posts.facebook_post import FacebookPost as FacebookPost
 
-from scrapers import facebook_scraper
-from scrapers.facebook_scraper import FacebookScraper as FacebookScraper
+from common import scrapers
+from common.scrapers import facebook_scraper
+from common.scrapers.facebook_scraper import FacebookScraper as FacebookScraper
 
 #YYYY-MM-DD
 date_fmt = "%Y-%m-%d"

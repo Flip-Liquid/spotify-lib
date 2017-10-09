@@ -9,7 +9,7 @@ except ImportError:
     from urllib2 import urlopen, Request
 
 import common
-from posts.facebook_post import FacebookPost as FacebookPost
+from common.posts.facebook_post import FacebookPost as FacebookPost
 
 class FacebookScraper(object):
     def __init__(self, criteria):
