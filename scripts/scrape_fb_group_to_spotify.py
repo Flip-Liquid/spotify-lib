@@ -47,7 +47,7 @@ def scrape_fb_group_to_spotify(fb_group_id='',fb_app_id='',fb_app_secret='',spfy
 		(authors,date_range,min_likes,min_loves,limit) = *get_criteria_from_user()
 
 	#Create critera object for scraping, refactor this
-	fb_criteria = FacebookCriteria((date_range,authors,min_likes,min_loves,limit));
+	fb_criteria = FacebookCriteria(date_range,authors,min_likes,min_loves,limit);
 	fb_criteria.app_id=fb_app_id
 	fb_criteria.app_secret=fb_app_secret
 	fb_criteria.group_id=fb_group_id
