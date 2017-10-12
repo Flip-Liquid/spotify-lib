@@ -21,10 +21,10 @@ class FacebookScraper(object):
         Scrape the group we're interested in with supplied criteria
         """
         self.scrape_data = scrape_group(
-            self.criteria.group_id, 
-            self.criteria.app_id + "|" + self.criteria.app_secret, 
-            self.criteria.date_range[0], 
-            self.criteria.date_range[1]) 
+            self.criteria.group_id,
+            self.criteria.app_id + "|" + self.criteria.app_secret,
+            self.criteria.date_range[0],
+            self.criteria.date_range[1])
 
     def get_scraped_posts(self):
         return self.scrape_data
@@ -33,10 +33,9 @@ class FacebookScraper(object):
         """
         Dumps posts from previous scraping to a csv file
 
-        :param filename: File to dump our scrapejob 
+        :param filename: File to dump our scrapejob
         """
         with open(filename.format(group_id), 'w') as file:
-            
             w = csv.writer(file)
             w.writerow(["status_id", "status_message", "status_author", "link_name",
                     "status_type", "status_link", "status_published",

@@ -1,0 +1,4 @@
+#scratch requirements
+
+urllib3
+spotipy

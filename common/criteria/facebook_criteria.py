@@ -1,10 +1,9 @@
 
 class FacebookCriteria(object):
 	"""docstring for FacebookCriteria"""
-	def __init__(self):
+	def __init__(self, date_range,authors,min_likes,min_loves,limit):
 		super(object, self).__init__()
-		self.date_range=tuple()
-		self.authors=list()
+		self.date_range,self.authors,self.min_likes,self.min_loves,self.limit = date_range,authors,min_likes,min_loves,limit
 		self.group_id=""
 		self.app_id=""
 		self.app_secret=""
