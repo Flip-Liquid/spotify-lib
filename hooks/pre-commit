@@ -2,6 +2,8 @@
 
 exec 1>&2
 
+exec < /dev/tty
+
 #regex to search for secrets
 regex="\+.*(s|S)ecret.*=.*(\"|').+(\"|')"
 
@@ -13,10 +15,18 @@ then
 
 	git diff --cached | egrep "\+.*(s|S)ecret.*=.*(\"|').+(\"|')"
 
-	Error: Possible secret detected in your code
-
-	Remove this before committing
+	Warning: Possible secret detected in your code
 
 EOF
+
+	read -p "Do you want to continue? (y/n)" yn
+
+	echo $yn | grep ^[Yy]$
+
+	if [ $? -eq 0 ]
+	then
+		exit 0;
+	fi
+
 	exit 1
 fi
