@@ -21,13 +21,10 @@ class FacebookScraper(object):
         Scrape the group we're interested in with supplied criteria
         """
         self.scrape_data = scrape_group(
-            self.criteria.group_id,
-            self.criteria.app_id + "|" + self.criteria.app_secret,
-            self.criteria.date_range[0],
-            self.criteria.date_range[1])
-
-    def get_scraped_posts(self):
-        return self.scrape_data
+            self.criteria["group_id"],
+            self.criteria["app_id"] + "|" + self.criteria["app_secret"],
+            self.criteria["date_range"][0],
+            self.criteria["date_range"][1])
 
     def dump_scraped_posts(self, filename):
         """
@@ -44,9 +41,12 @@ class FacebookScraper(object):
                     "num_special"])
 
             for post in scrape_data:
-                w.writerow(post.get_tuple)
+                w.writerow(post.get_tuple())
 
+    def get_group_friendly_name(self):
+        pass
 
+#TODO: Add a wat to get fb froup friendly name
 
 ###############################################################
 def request_until_succeed(url):
@@ -66,13 +66,11 @@ def request_until_succeed(url):
 
     return response.read().decode('utf-8')
 
-
 def unicode_decode(text):
     try:
         return text.encode('utf-8').decode()
     except UnicodeDecodeError:
         return text.encode('utf-8')
-
 
 def getFacebookPageFeedUrl(base_url):
 
@@ -84,7 +82,6 @@ def getFacebookPageFeedUrl(base_url):
     url = base_url + fields
 
     return url
-
 
 def getReactionsForStatuses(base_url):
 

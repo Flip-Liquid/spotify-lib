@@ -40,8 +40,8 @@ class FacebookPost(object):
 		self.num_special)
 
 	def __str__(self):
-		selfstr=""
+		selfstr="Facebook post: ["
 		for item in self.get_tuple():
-			selfstr = selfstr + str(item) + ','
+			selfstr = selfstr + str(item) + ',\n'
+		selfstr+="]"
 		return selfstr
-		
