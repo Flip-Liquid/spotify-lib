@@ -63,6 +63,14 @@ class TestSpotifyPlayer(unittest.TestCase):
 
 
     def test_add_track_to_playlist(self):
-        pass
+        track = {'artist': 'Massive Attack', 'track' : 'Be Thankful For What You Got'}
+
+        self.spotify.search_track(track)
+
+        playlist_id = self.spotify.create_playlist('one luv bruv')
+
+        self.spotify.add_tracks_to_playlist_by_name([track], playlist_id)
+
+
 
 

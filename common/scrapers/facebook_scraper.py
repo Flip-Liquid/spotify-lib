@@ -11,6 +11,8 @@ except ImportError:
 import common
 from common.posts.facebook_post import FacebookPost as FacebookPost
 
+#TODO: Object model is a little janky here
+
 class FacebookScraper(object):
     def __init__(self, criteria):
         self.scrape_data = list()
@@ -32,7 +34,7 @@ class FacebookScraper(object):
 
         :param filename: File to dump our scrapejob
         """
-        with open(filename.format(group_id), 'w') as file:
+        with open(filename.format(self.criteria['group_id']), 'w') as file:
             w = csv.writer(file)
             w.writerow(["status_id", "status_message", "status_author", "link_name",
                     "status_type", "status_link", "status_published",
@@ -40,11 +42,13 @@ class FacebookScraper(object):
                     "num_loves", "num_wows", "num_hahas", "num_sads", "num_angrys",
                     "num_special"])
 
-            for post in scrape_data:
+            for post in self.scrape_data:
                 w.writerow(post.get_tuple())
 
     def get_group_friendly_name(self):
-        pass
+        return get_group_friendly_name(
+            self.criteria["group_id"],
+            self.criteria["app_id"] + "|" + self.criteria["app_secret"])
 
 #TODO: Add a wat to get fb froup friendly name
 
@@ -162,7 +166,7 @@ def scrape_group(group_id, access_token, since_date, until_date):
     # /feed endpoint pagenates througn an `until` and `paging` parameters
     until = ''
     paging = ''
-    base = "https://graph.facebook.com/v2.9"
+    base = "https://graph.facebook.com/v2.10"
     node = "/{}/feed".format(group_id)
     parameters = "/?limit={}&access_token={}".format(100, access_token)
     since = "&since={}".format(since_date) if since_date \
@@ -216,3 +220,14 @@ def scrape_group(group_id, access_token, since_date, until_date):
           num_processed, datetime.datetime.now() - scrape_starttime))
 
     return fb_post_data
+
+def get_group_friendly_name(group_id, access_token):
+    base = "https://graph.facebook.com/v2.10"
+    node = "/{}".format(group_id)
+    params = "/?access_token={}".format(access_token)
+
+    base_url = base+node+params
+
+    group = json.loads(request_until_succeed(base_url))
+
+    return group['name']
