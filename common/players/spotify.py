@@ -87,12 +87,14 @@ class SpotifyPlayer(object):
             max_ind = min(len(dedeuplicated_track_ids), (i+1)*batch_size)
             track_id_slize = dedeuplicated_track_ids[i*batch_size:max_ind-1]
 
+            logging.info('Attempting to add {} tracks'.format(len(track_id_slize)))
+
             try:
                 self.auth_spotipy.user_playlist_add_tracks(self.user_id, playlist_id, track_id_slize)
             except:
                 e = sys.exc_info()[0]
                 logging.error('error in adding tracks {tracks} to playlist {playlist} for user {user} :{e}'.format(
-                    tracks=dedeuplicated_track_ids, playlist=playlist_id, user=self.user_id, e=e))
+                    tracks=track_id_slize, playlist=playlist_id, user=self.user_id, e=e))
                 raise
 
     def add_tracks_to_playlist_by_name(self, track_info, playlist_id):

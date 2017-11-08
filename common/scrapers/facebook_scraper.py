@@ -56,19 +56,30 @@ class FacebookScraper(object):
 def request_until_succeed(url):
     req = Request(url)
     success = False
+    data = None
+    retry_count = 15
+
     while success is False:
+
         try:
             response = urlopen(req)
             if response.getcode() == 200:
+                data = response.read().decode('utf-8')
                 success = True
+
         except Exception as e:
+
+            if retry_count <= 0:
+                raise e
+
             print(e)
             time.sleep(5)
 
             print("Error for URL {}: {}".format(url, datetime.datetime.now()))
             print("Retrying.")
+            retry_count -= 1
 
-    return response.read().decode('utf-8')
+    return data
 
 def unicode_decode(text):
     try:

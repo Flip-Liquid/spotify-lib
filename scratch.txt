@@ -1,6 +1,6 @@
 Link types:
 
-1) Youtube 
+1) Youtube
 2) Spotify
 3) LastFM
 
@@ -15,12 +15,12 @@ Work
 
 
 
-1) Youtube 
+1) Youtube
 	-Get video name from supplied url (0)
 
 2) Spotify lib
 	-Get user account info
-	-Check if song is in spotify library 
+	-Check if song is in spotify library
 	-Create a new playlist
 	-Add songs to playlist
 

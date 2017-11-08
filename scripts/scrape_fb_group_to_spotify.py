@@ -37,13 +37,19 @@ def scrape_fb_group_to_spotify_playlist(**kwargs):
     print(fb_criteria)
 
     fb_scraper = FacebookScraper(fb_criteria)
-    fb_scraper.scrape()
+
+    try:
+        fb_scraper.scrape()
+    except:
+        print('Scrape terminated early with error:')
+        print(sys.exc_info[0])
+
     fb_group_friendly_name = fb_scraper.get_group_friendly_name()
 
     dump_info = []
     scraped_track_ids = []
 
-    playlist_name= fb_group_friendly_name + ' {}'.format(datetime.now().strftime('%Y.%m.%d'))
+    playlist_name = fb_group_friendly_name + ' {}'.format(datetime.now().strftime('%Y.%m.%d'))
 
     #Parse all scraped posts, then get their track ids, then add these?
     #Parse one post, get it's track id, and then add in bulk
