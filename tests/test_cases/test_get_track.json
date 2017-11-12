@@ -1,0 +1,59 @@
+
+[
+	{
+		"_comment": "Testing for 'blob' entries",
+		"track_info" : [
+			{
+				"test_id" : 0,
+				"blob" : "Silence Must Be Heard"
+			},
+			{
+				"test_id" : 1,
+				"blob" : "Sneaker Pimps 6 Underground"
+			},
+			{
+				"test_id" : 2,
+				"blob" : "Alone in Kyoto AIR"
+			},
+			{
+				"test_id" : 3,
+				"blob" : "\"Low Place Like Home\" Sneaker Pimps"
+			},
+			{
+				"test_id" : 4,
+				"blob" : "DEPECHE MODE In your room."
+			},
+			{
+				"test_id" : 5,
+				"blob" : "Massive Attack Safe From Harm"
+			},
+			{
+				"test_id" : 6,
+				"blob" : "David Lynch 'Good Day Today' "
+			},
+			{
+				"test_id" : 7,
+				"blob" : "Bryan Ferry I Put A Spell On You "
+			},
+			{
+				"test_id" : 8,
+				"blob" : "Mogwai \"Stanley Kubrick\""
+			}
+		],
+		"expected_ids" :
+			{
+				"test_id" :
+				{
+					"0" : {"spotify_id": "06YQULjJuHlACCU2LYL055" },
+					"1" : {"spotify_id": "4OchoJP9f6qiSycrX8iV9Z" },
+					"2" : {"spotify_id": "40UlFC0dIxv7lAEJaPZLnm" },
+					"3" : {"spotify_id": "7gvk3763YmlEjMud1yvXwR" },
+					"4" : {"spotify_id": "5l246u9QjOmdTXrbV3hpD9" },
+					"5" : {"spotify_id": "1vNNfTgHsrpOXeiaXQBlH7" },
+					"6" : {"spotify_id": "7kZu5usuQZs19rPiSnwGRV" },
+					"7" : {"spotify_id": "332aLyB2kP89E35XUfEjYq" },
+					"8" : {"spotify_id": "5UCUeDVhHThYefOS6NEsDu" }
+				}
+			}
+	}
+]

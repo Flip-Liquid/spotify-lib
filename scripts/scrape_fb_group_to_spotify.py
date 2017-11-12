@@ -57,7 +57,7 @@ def scrape_fb_group_to_spotify_playlist(**kwargs):
 
     if not kwargs['no_dump']:
         if kwargs['out_file'] is None:
-            kwargs['out_file'] = playlist_name
+            kwargs['out_file'] = playlist_name.translate({ord(c): None for c in '!@#$\\/'})
 
     for post in fb_scraper.scrape_data:
         track_info = None
@@ -82,7 +82,7 @@ def scrape_fb_group_to_spotify_playlist(**kwargs):
 
 
     if not kwargs['no_dump']:
-        dump_scraped_posts(dump_info, playlist_name, kwargs['out_file'])
+        dump_scraped_posts(dump_info, fb_group_friendly_name, kwargs['out_file'])
 
     if kwargs['scrape_only']:
         return
@@ -130,7 +130,9 @@ def parse_track_and_artist(name):
     #ARTIST - TRACK [Label information]
     #ARTIST "TRACK"
     #ARTIST : TRACK
-    #Keep track name with remix information, remove official video or label info
+    #ARTIST :: TRACK
+    #TRACK by ARTIST
+    #TODO: Keep track name with remix information, remove official video or label info
     track_info = None
 
     #remove any parens
@@ -164,7 +166,7 @@ def parse_track_and_artist(name):
 
 def validate_arguments(kwargs):
     #check first for environment variables for id and secret
-    if kwargs['fb_app_id'] is None:
+    if 'fb_app_id' not in kwargs or kwargs['fb_app_id'] is None:
         try:
             print('trying to get fb app id from environment')
             kwargs['fb_app_id'] = os.environ['FB_APP_ID']
@@ -172,7 +174,7 @@ def validate_arguments(kwargs):
             print('fb app id not passed nor set in environment')
             exit(1)
 
-    if kwargs['fb_app_secret'] is None:
+    if 'fb_app_secret' not in kwargs or kwargs['fb_app_secret'] is None:
         try:
             print('trying to get fb app secret from environment')
             kwargs['fb_app_secret'] = os.environ['FB_APP_SECRET']
@@ -180,7 +182,7 @@ def validate_arguments(kwargs):
             print('fb app secret not passed in or set in environment')
             exit(1)
 
-    if kwargs['spfy_app_id'] is None:
+    if 'spfy_app_id' not in kwargs or kwargs['spfy_app_id'] is None:
         try:
             print('trying to get spotify app id from environment')
             kwargs['spfy_app_id'] = os.environ['SPOTIPY_CLIENT_ID']
@@ -188,7 +190,7 @@ def validate_arguments(kwargs):
             print('spotify app id not passed nor set in environment')
             exit(1)
 
-    if kwargs['spfy_app_secret'] is None:
+    if 'spfy_app_secret' not in kwargs or kwargs['spfy_app_secret'] is None:
         try:
             print('trying to get spotify app secret from environment')
             kwargs['spfy_app_secret'] = os.environ['SPOTIPY_CLIENT_SECRET']
@@ -196,16 +198,16 @@ def validate_arguments(kwargs):
             print('spotify app secret not passed in nor set in environment')
             exit(1)
 
-    if kwargs['fb_group_id'] is None:
+    if 'fb_group_id' not in kwargs or kwargs['fb_group_id'] is None:
         print('group id not specified')
         exit(1)
 
-    if kwargs['spfy_user_id'] is None:
+    if 'spfy_user_id' not in kwargs or kwargs['spfy_user_id'] is None:
         print('spotify user id not specified, tracks will not be added to playlist')
 
     #Read from user if not silent and unspecified
-    if not kwargs['silent'] and len(kwargs['authors'])==0 and 'begin_date' not in kwargs and 'end_date' not in kwargs and kwargs['min_likes']==0 and kwargs['min_loves']==0 and kwargs['limit']==0:
-        get_criteria_from_user(kwargs)
+    #if ('silent' not in kwargs or not kwargs['silent']) and len(kwargs['authors'])==0 and 'begin_date' not in kwargs and 'end_date' not in kwargs and kwargs['min_likes']==0 and kwargs['min_loves']==0 and kwargs['limit']==0:
+        #get_criteria_from_user(kwargs)
 
 
 

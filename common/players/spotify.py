@@ -80,21 +80,23 @@ class SpotifyPlayer(object):
             if i not in dedeuplicated_track_ids:
                 dedeuplicated_track_ids.append(i)
 
-        logging.debug('removed {} duplicate tracks'.format(len(track_ids)-len(dedeuplicated_track_ids)))
+        logging.debug('removed {} duplicate tracks from {} unique tracks'.format(
+            len(track_ids)-len(dedeuplicated_track_ids), len(dedeuplicated_track_ids)))
 
         for i in range(0, len(dedeuplicated_track_ids) % batch_size):
             #get current slize of track ids
             max_ind = min(len(dedeuplicated_track_ids), (i+1)*batch_size)
-            track_id_slize = dedeuplicated_track_ids[i*batch_size:max_ind-1]
+            logging.debug('Max_index: {}'.format(max_ind))
+            track_id_slice = dedeuplicated_track_ids[i*batch_size:max_ind]
 
-            logging.info('Attempting to add {} tracks'.format(len(track_id_slize)))
+            logging.info('Attempting to add {} tracks'.format(len(track_id_slice)))
 
             try:
-                self.auth_spotipy.user_playlist_add_tracks(self.user_id, playlist_id, track_id_slize)
+                self.auth_spotipy.user_playlist_add_tracks(self.user_id, playlist_id, track_id_slice)
             except:
                 e = sys.exc_info()[0]
                 logging.error('error in adding tracks {tracks} to playlist {playlist} for user {user} :{e}'.format(
-                    tracks=track_id_slize, playlist=playlist_id, user=self.user_id, e=e))
+                    tracks=track_id_slice, playlist=playlist_id, user=self.user_id, e=e))
                 raise
 
     def add_tracks_to_playlist_by_name(self, track_info, playlist_id):
@@ -139,7 +141,12 @@ class SpotifyPlayer(object):
 
         for track in track_info:
             track_id = self.get_track_id_from_track_info(track)
+
+            logging.info("retrieved track id {} for {}".format(track_id, track))
+
             track_ids.append(track_id)
+
+        return track_ids
 
     def get_track_id_from_track_info(self, track_info):
 
@@ -171,7 +178,7 @@ class SpotifyPlayer(object):
         try:
             query = '{track} {artist}'.format(track=track_info['track'], artist=track_info['artist'])
         except:
-            query = track_info['blob']
+            query = '{}'.format(track_info['blob'])
 
         logging.info('searching spotify with query {query}'.format(query=query))
 
