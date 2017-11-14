@@ -22,76 +22,96 @@ from common.players.spotify import SpotifyPlayer
 #if not silent and len(authors)==0 and len(date_range)==0 and min_likes==0 and min_loves==0 and limit==0:
 
 def scrape_fb_group_to_spotify_playlist(**kwargs):
-    #Create critera object for scraping, refactor this
+
+    track_ids = []
+    no_dump = kwargs['no_dump']
+    out_file = kwargs['out_file']
+    fb_criteria = unpack_fb_critieria_from_args(**kwargs)
+
+    fb_scraper = FacebookScraper(fb_criteria)
+    spotify_player = SpotifyPlayer(kwargs['spfy_user_id'])
+
+
+    if 'in_file' not in kwargs or kwargs['in_file'] is None:
+        track_ids = scrape_track_ids_and_dump(fb_criteria, fb_scraper, spotify_player, no_dump, out_file)
+    else:
+        track_ids = get_track_ids_from_file(kwargs['in_file'])
+
+    playlist_name = generate_playlist_name(fb_scraper)
+
+    print('adding {num_tracks} tracks to {playlist}'.format(num_tracks=len(track_ids), playlist=playlist_name))
+
+    playlist_id = spotify_player.create_playlist(playlist_name)
+
+    spotify_player.add_track_ids_to_playlist(track_ids, playlist_id)
+
+def unpack_fb_critieria_from_args(**kwargs):
     fb_criteria = {
-        "app_id"        : kwargs["fb_app_id"],
-        "app_secret"    : kwargs["fb_app_secret"],
-        "group_id"      : kwargs["fb_group_id"],
-        "date_range"    : (kwargs["begin_date"], kwargs["end_date"]),
-        "min_likes"     : kwargs["min_likes"],
-        "min_loves"     : kwargs["min_loves"],
-        "limit"         : kwargs["limit"]
-    }
+            "app_id"        : kwargs["fb_app_id"],
+            "app_secret"    : kwargs["fb_app_secret"],
+            "group_id"      : kwargs["fb_group_id"],
+            "date_range"    : (kwargs["begin_date"], kwargs["end_date"]),
+            "min_likes"     : kwargs["min_likes"],
+            "min_loves"     : kwargs["min_loves"],
+            "limit"         : kwargs["limit"]
+        }
+    return fb_criteria
+
+def scrape_track_ids_and_dump(fb_criteria, scraper, spfy, no_dump, out_file):
+    #Create critera object for scraping, refactor this
+    track_ids = []
 
     print('Logging with criteria:')
     print(fb_criteria)
 
-    fb_scraper = FacebookScraper(fb_criteria)
-
     try:
-        fb_scraper.scrape()
+        scraper.scrape()
     except:
         print('Scrape terminated early with error:')
         print(sys.exc_info[0])
 
-    fb_group_friendly_name = fb_scraper.get_group_friendly_name()
+    dump_info = None
 
-    dump_info = []
-    scraped_track_ids = []
+    playlist_name = generate_playlist_name()
 
+    if not no_dump:
+        dump_info = []
+        if out_file is None:
+            out_file = playlist_name.translate({ord(c): None for c in '!@#$\\/'})
+
+    get_spotify_track_ids(spfy, scraper.scrape_data, track_ids, dump_info)
+
+    if dump_info is not None:
+        dump_scraped_posts(dump_info, scraper.get_group_friendly_name(), out_file)
+
+    return track_ids
+
+def generate_playlist_name(scraper):
+
+    fb_group_friendly_name = scraper.get_group_friendly_name()
     playlist_name = fb_group_friendly_name + ' {}'.format(datetime.now().strftime('%Y.%m.%d'))
 
-    #Parse all scraped posts, then get their track ids, then add these?
-    #Parse one post, get it's track id, and then add in bulk
-    spotify_player = SpotifyPlayer(kwargs["spfy_user_id"])
+    return playlist_name
 
-    if not kwargs['no_dump']:
-        if kwargs['out_file'] is None:
-            kwargs['out_file'] = playlist_name.translate({ord(c): None for c in '!@#$\\/'})
-
-    for post in fb_scraper.scrape_data:
+def get_spotify_track_ids(spfy, scraped_data, track_ids, dump_info):
+    for post in scraped_data:
         track_info = None
+        track_id = 0
 
         try:
             track_info = parse_track_and_artist(post.link_name)
         except:
             continue
-
-        track_id = 0
-
         try:
-            track_id = spotify_player.get_track_id_from_track_info(track_info)
+            track_id = spfy.get_track_id_from_track_info(track_info)
         except:
             continue
 
         if track_id != 0:
-            scraped_track_ids.append(track_id)
+            track_ids.append(track_id)
 
-        if kwargs['out_file'] is not None:
+        if dump_info is not None:
             dump_info.append((post.link_name, track_info['artist'], track_info['track'], track_info['blob'], track_id))
-
-
-    if not kwargs['no_dump']:
-        dump_scraped_posts(dump_info, fb_group_friendly_name, kwargs['out_file'])
-
-    if kwargs['scrape_only']:
-        return
-
-    print('adding {num_tracks} tracks to {playlist}'.format(num_tracks=len(scraped_track_ids), playlist=playlist_name))
-
-    playlist_id = spotify_player.create_playlist(playlist_name)
-
-    spotify_player.add_track_ids_to_playlist(scraped_track_ids, playlist_id)
 
 def dump_scraped_posts(scrape_info, groupname, filename):
     """
@@ -136,15 +156,11 @@ def parse_track_and_artist(name):
     track_info = None
 
     #remove any parens
-    #name = re.sub(r'\([^()]*?((v|V)ideo)\)', '', name)
     name = re.sub(r'\([^\())]*\)', '', name)
-
     #remove label information
     name = re.sub(r'\[[^\]]*\]', '', name)
-
     #remove year from title
     name = re.sub(r'199\d', '', name)
-
     #Remove "High Quality" from title
     name = re.sub(r'HQ', '', name)
 
@@ -163,6 +179,22 @@ def parse_track_and_artist(name):
         track_info = {'artist': name_split[0], 'track': name_split[1], 'blob': None}
 
     return track_info
+
+def get_track_ids_from_file(in_file):
+    #link name, artist, track, blob, track_id
+    if not os.path.exists(in_file):
+        raise Exception('{} does not exist'.format(in_file))
+
+    track_ids = []
+
+    with open(in_file, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            track_id = row[3]
+            if track_id != 0:
+                track_ids.append(track_id)
+
+    return track_ids
 
 def validate_arguments(kwargs):
     #check first for environment variables for id and secret
@@ -228,6 +260,7 @@ def parse_arguments():
     parser.add_argument('--limit', type=int, help='limit the maximum number of tracks to add to our scraped playlist', default=0)
     parser.add_argument('--silent', help='run script without prompting for criteria if none is provided', action='store_const', const=True, default=False)
     parser.add_argument('--scrape_only', help='choose only to scrape data without adding to spotify playlist', action='store_const', const=True, default=False)
+    parser.add_argument('--in_file', type=str, help='specify path of a previous dump from which to create the playlist')
     parser.add_argument('--out_file', type=str, help='specify out file for dumping scrape information')
     parser.add_argument('--no_dump', help='set this flag if no output csv is desired', action='store_const', const=True, default=False)
     return parser.parse_args()

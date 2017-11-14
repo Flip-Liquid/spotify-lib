@@ -68,20 +68,24 @@ class SpotifyPlayer(object):
 
         return playlist_id
 
-    def add_track_ids_to_playlist(self, track_ids, playlist_id):
+    def add_track_ids_to_playlist(self, user_id, playlist_id, track_ids):
         """
         Add track ids to specified playlist
         Adds in batches of batch_size
+        :param user_id: username of the user who owns the specified playlist
+        :param playlist_id: playlist to which we're adding tracks
+        :param track_ids: list of track ids that we're adding to playlist
         """
-        batch_size = 50
+        batch_size = 75
         dedeuplicated_track_ids = []
+
+        #Try to pre-populate track ids with whatever's already in the playlist
+        if self.check_playlist_exists(user_id, playlist_id):
+            dedeuplicated_track_ids = self.get_tracks_in_playlist(user_id, playlist_id)
 
         for i in track_ids:
             if i not in dedeuplicated_track_ids:
                 dedeuplicated_track_ids.append(i)
-
-        logging.debug('removed {} duplicate tracks from {} unique tracks'.format(
-            len(track_ids)-len(dedeuplicated_track_ids), len(dedeuplicated_track_ids)))
 
         for i in range(0, len(dedeuplicated_track_ids) % batch_size):
             #get current slize of track ids
@@ -92,14 +96,22 @@ class SpotifyPlayer(object):
             logging.info('Attempting to add {} tracks'.format(len(track_id_slice)))
 
             try:
-                self.auth_spotipy.user_playlist_add_tracks(self.user_id, playlist_id, track_id_slice)
+                self.auth_spotipy.user_playlist_add_tracks(user_id, playlist_id, track_id_slice)
             except:
                 e = sys.exc_info()[0]
                 logging.error('error in adding tracks {tracks} to playlist {playlist} for user {user} :{e}'.format(
-                    tracks=track_id_slice, playlist=playlist_id, user=self.user_id, e=e))
+                    tracks=track_id_slice, playlist=playlist_id, user=user_id, e=e))
                 raise
 
-    def add_tracks_to_playlist_by_name(self, track_info, playlist_id):
+    def get_tracks_in_playlist(self, user_id, playlist_id):
+        track_ids = []
+
+        playlist_tracks = self.auth_spotipy.user_playlist_tracks(user_id, playlist_id=playlist_id)
+        track_ids = [playlist_track['track']['id'] for playlist_track in playlist_tracks['items']]
+
+        return track_ids
+
+    def add_tracks_to_playlist_by_name(self, user_id, playlist_id, track_info):
         """
         Adds a track to the specified playlist id using track_info as a best-guess
 
@@ -107,29 +119,56 @@ class SpotifyPlayer(object):
         :param playlist_id: spotify's numerical representation of a particular playlist
         """
         track_ids = self.get_track_ids_from_track_info(track_info)
-        self.add_track_ids_to_playlist(track_ids, playlist_id)
+        self.add_track_ids_to_playlist(user_id, playlist_id, track_ids)
 
-    def get_playlist_id_from_name(self, playlist_name, user_name=''):
+    def get_playlist_id_from_name(self, user_id, playlist_name):
         """
         :param playlist_name: friendly name of the playlist
-        :param user_name: user_name whose playlist we want
+        :param user_id: user_id whose playlist we want
         """
-        if user_name == '':
-            user_name = self.user_id
+        if user_id == '':
+            user_id = self.user_id
+
+        playlists = []
 
         try:
-            playlists = self.spotify.auth_spotipy.user_playlists(user_name)
+            playlists = self.spotify.auth_spotipy.user_playlists(user_id)
         except:
             e = sys.exc_info()[0]
             logging.error('error in getting playlist {playlist_name} for user {user}: {e}'.format(
-                user=user_name, playlist_name=playlist_name, e=e))
+                user=user_id, playlist_name=playlist_name, e=e))
             raise
 
         for playlist in playlists['items']:
-            if playlist['owner']['id'] == user_name and playlist['name'] == playlist_name:
+            if playlist['owner']['id'] == user_id and playlist['name'] == playlist_name:
                 return playlist['id']
 
-        raise Exception('no playlist with name {name} found in {user}\'s account'.format(name=playlist_name,user=user_name))
+        logging.warning('no playlist with name {name} found in {user}\'s account'.format(name=playlist_name,user=user_id))
+
+        return None
+
+    def check_playlist_exists(self, user_id, playlist_id):
+        """
+        :param user_id: spotify user id
+        :param playlist_name: the friendly name of the playlist we're checking for
+        """
+        playlist_id = self.get_playlist_id_from_name(user_id, playlist_id)
+
+        playlists = []
+
+        try:
+            playlists = self.spotify.auth_spotipy.user_playlists(user_id)
+        except:
+            e = sys.exc_info()[0]
+            logging.error('error in getting playlist {playlist_id} for user {user}: {e}'.format(
+                user=user_id, playlist_id=playlist_id, e=e))
+            raise
+
+        for playlist in playlists['items']:
+            if playlist['owner']['id'] == user_id and playlist['id'] == playlist_id:
+                return True
+
+        return False
 
     def get_track_ids_from_track_info(self, track_info):
         """
