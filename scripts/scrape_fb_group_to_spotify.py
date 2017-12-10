@@ -37,13 +37,14 @@ def scrape_fb_group_to_spotify_playlist(**kwargs):
     else:
         track_ids = get_track_ids_from_file(kwargs['in_file'])
 
-    playlist_name = generate_playlist_name(fb_scraper)
+    #playlist_name = generate_playlist_name(fb_scraper)
+    playlist_name = 'Trip Hop  Downtempo  Chill Out  Electronica 2017.11.10'
 
     print('adding {num_tracks} tracks to {playlist}'.format(num_tracks=len(track_ids), playlist=playlist_name))
 
     playlist_id = spotify_player.create_playlist(playlist_name)
 
-    spotify_player.add_track_ids_to_playlist(track_ids, playlist_id)
+    spotify_player.add_track_ids_to_playlist(kwargs['spfy_user_id'], playlist_id, track_ids)
 
 def unpack_fb_critieria_from_args(**kwargs):
     fb_criteria = {
@@ -73,6 +74,7 @@ def scrape_track_ids_and_dump(fb_criteria, scraper, spfy, no_dump, out_file):
     dump_info = None
 
     playlist_name = generate_playlist_name()
+    
 
     if not no_dump:
         dump_info = []
@@ -181,7 +183,13 @@ def parse_track_and_artist(name):
     return track_info
 
 def get_track_ids_from_file(in_file):
+    """
+    TODO: path gore
+    :param in_file: path for the csv which contains previously scraped track ids
+    """
     #link name, artist, track, blob, track_id
+    tid_index = 4
+    tid_len = 22
     if not os.path.exists(in_file):
         raise Exception('{} does not exist'.format(in_file))
 
@@ -189,10 +197,11 @@ def get_track_ids_from_file(in_file):
 
     with open(in_file, 'r') as file:
         reader = csv.reader(file)
-        for row in reader:
-            track_id = row[3]
-            if track_id != 0:
-                track_ids.append(track_id)
+        for row in reader :
+            if len(row) >= tid_index + 1:
+                tid = row[tid_index]
+                if len(tid)==tid_len:
+                    track_ids.append(tid)
 
     return track_ids
 
