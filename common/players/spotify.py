@@ -3,6 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath('..'))
 
+import math
 import logging
 
 import spotipy
@@ -70,7 +71,7 @@ class SpotifyPlayer(object):
 
     def add_track_ids_to_playlist(self, user_id, playlist_id, track_ids):
         """
-        Add track ids to specified playlist
+        Add track ids to specified playlist (spotify can only add 100 at a time)
         Adds in batches of batch_size
         :param user_id: username of the user who owns the specified playlist
         :param playlist_id: playlist to which we're adding tracks
@@ -87,7 +88,7 @@ class SpotifyPlayer(object):
             if i not in dedeuplicated_track_ids:
                 dedeuplicated_track_ids.append(i)
 
-        for i in range(0, len(dedeuplicated_track_ids) % batch_size):
+        for i in range(0, math.ceil(len(dedeuplicated_track_ids) / batch_size)):
             #get current slize of track ids
             max_ind = min(len(dedeuplicated_track_ids), (i+1)*batch_size)
             logging.debug('Max_index: {}'.format(max_ind))
@@ -132,7 +133,7 @@ class SpotifyPlayer(object):
         playlists = []
 
         try:
-            playlists = self.spotify.auth_spotipy.user_playlists(user_id)
+            playlists = self.auth_spotipy.user_playlists(user_id)
         except:
             e = sys.exc_info()[0]
             logging.error('error in getting playlist {playlist_name} for user {user}: {e}'.format(
@@ -147,17 +148,17 @@ class SpotifyPlayer(object):
 
         return None
 
-    def check_playlist_exists(self, user_id, playlist_id):
+    def check_playlist_exists(self, user_id, playlist_name):
         """
         :param user_id: spotify user id
         :param playlist_name: the friendly name of the playlist we're checking for
         """
-        playlist_id = self.get_playlist_id_from_name(user_id, playlist_id)
+        playlist_id = self.get_playlist_id_from_name(user_id, playlist_name)
 
         playlists = []
 
         try:
-            playlists = self.spotify.auth_spotipy.user_playlists(user_id)
+            playlists = self.auth_spotipy.user_playlists(user_id)
         except:
             e = sys.exc_info()[0]
             logging.error('error in getting playlist {playlist_id} for user {user}: {e}'.format(
